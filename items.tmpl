@@ -1,6 +1,6 @@
 ## {{.title}}
 {{for item in .items-}}
-{{if $last}}and {{end}}{{item.name}}{{if ! $last}}, {{end-}}
+{{if $last}}and {{end}}{{item.name}}{{if (! $last) && $index != 1}}, {{end-}}
 {{end-}}
 
 

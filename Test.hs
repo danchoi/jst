@@ -93,6 +93,31 @@ main = runTestTT . test $ [
                 (Expr Nothing (Key "a"))
                 (LitExpr (String "foo"))
 
+  , "parse precedence with parens" ~:
+        parseExpr "(! .a) && (.b != 2)"
+          @?= BinaryExpr And 
+                  (NegExpr (Expr Nothing (Key "a"))) 
+                  (BinaryExpr NotEqual 
+                      (Expr Nothing (Key "b")) 
+                      (LitExpr (Number 2.0)))
+
+  , "parse precedence without parens" ~:
+        parseExpr "! .a && .b != 2"
+          @?= BinaryExpr And 
+                  (NegExpr (Expr Nothing (Key "a"))) 
+                  (BinaryExpr NotEqual 
+                      (Expr Nothing (Key "b")) 
+                      (LitExpr (Number 2.0)))
+
+  , "binary expr with loopVars" ~:
+        parseExpr "! $last && $index != 2"
+          @?= BinaryExpr And 
+                  (NegExpr (LoopVar "$last"))
+                  (BinaryExpr NotEqual 
+                      (LoopVar "$index")
+                      (LitExpr (Number 2.0)))
+
+
   , "eval test: == with lit" ~:
         evalTest "{\"a\": \"foo\"}" ".a == \"foo\"" 
           @?= Bool True
@@ -104,7 +129,7 @@ main = runTestTT . test $ [
 
 parseExpr :: Text -> Expr
 parseExpr s = either  
-      (error $ "Could not parse " ++ show s) id
+      (\e -> error $ "Could not parse " ++ show s ++ " error: " ++ e) id
     $ parseOnly pExpr s
 
 -- | convenient for testing

@@ -78,35 +78,56 @@ parseEnd =
 
 pExpr :: Parser Expr
 pExpr = 
-    pNegExpr
-    <|>
-    pBinaryExpr
-    <|>
-    pLoopVar
-    <|>
-    (Expr <$> (optional pVar) <*> pPath)
+        pBinaryExprs
+    <|> inParens pExpr
+    <|> pNegExpr
+    <|> pLoopVar 
+    <|> pVarExpr
+    <|> pLitExpr 
+
+pBinaryExprs :: Parser Expr
+pBinaryExprs = 
+    -- in reverse order of precedence
+        pBinaryExpr [And, Or]
+    <|> pBinaryExpr [NotEqual, Equal]
 
 pVarExpr :: Parser Expr
 pVarExpr = Expr <$> (optional pVar) <*> pPath
 
 pNegExpr :: Parser Expr
 pNegExpr =
-    NegExpr <$> (token "!" *> pExpr)
+    NegExpr <$> (token "!" *> (inParens pExpr <|> atoms))
+  where atoms = pLoopVar 
+            <|> pVarExpr
+            <|> pLitExpr 
+    
 
-pBinaryExpr :: Parser Expr
-pBinaryExpr = do
-  e1 <- inParens pExpr <|> pLitExpr <|> pVarExpr
-  op <- pBinaryOp
-  e2 <- inParens pExpr <|> pLitExpr <|> pVarExpr
-  pure $ BinaryExpr op e1 e2
+pBinaryExpr :: [BinaryOp] -> Parser Expr
+pBinaryExpr ops = do
+    e1 <- operand1
+    op <- pBinaryOp ops
+    e2 <- operand2
+    pure $ BinaryExpr op e1 e2
+  where operand1 = inParens pExpr 
+                  <|> pExprNotBinary 
+        operand2 = inParens pExpr 
+                  <|> pBinaryExprs
+                  <|> pExprNotBinary 
+        pExprNotBinary = 
+            pNegExpr
+            <|> pLoopVar
+            <|> pVarExpr
+            <|> pLitExpr 
 
-pBinaryOp :: Parser BinaryOp
-pBinaryOp = choice [
-    token "&&" *> pure And
-  , token "||" *> pure Or
-  , token "==" *> pure Equal
-  , token "!=" *> pure NotEqual
-  ]
+pBinaryOp :: [BinaryOp] -> Parser BinaryOp
+pBinaryOp ops = choice 
+  $ map (\op -> token (toToken op) *> pure op) ops
+
+toToken :: BinaryOp -> Text
+toToken And = "&&"
+toToken Or = "||"
+toToken Equal = "=="
+toToken NotEqual = "!="
 
 pLitExpr :: Parser Expr
 pLitExpr = LitExpr <$> 
