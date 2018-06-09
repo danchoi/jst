@@ -13,14 +13,14 @@ parseTemplate :: Text -> Either String [Block]
 parseTemplate s = 
     parseOnly (many' parseBlock) s
 
+type Expr = Text
+
 data Block = 
       Loop Expr [Block]
     | Conditional Expr [Block]
     | Literal Text
     deriving Show
 
-data Expr = Expr Text
-  deriving Show
 
 data LoopExpr = LoopExpr
   deriving Show
@@ -62,8 +62,7 @@ cbrace :: Parser ()
 cbrace = skipSpace >> string "}}" *> pure ()
 
 parseExpr :: Parser Expr
-parseExpr = 
-  Expr <$> takeWhile1 (notInClass " {}")
+parseExpr = takeWhile1 (notInClass " {}")
 
 parseEnd :: Parser ()
 parseEnd = pure () <* string "{{end}}" 
