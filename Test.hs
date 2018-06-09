@@ -1,5 +1,6 @@
 module Main where
 import Test.HUnit
+import Types
 import Expr
 import Template
 import Data.Attoparsec.Text

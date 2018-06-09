@@ -1,4 +1,5 @@
 module Template where
+import Types
 import Data.Aeson
 import Control.Applicative
 import Data.Attoparsec.Text
@@ -10,17 +11,6 @@ import qualified Data.Text as T
 parseTemplate :: Text -> Either String [Block]
 parseTemplate s = 
     parseOnly (many' parseBlock) s
-
-data Block = 
-      Loop Expr [Block]
-    | Conditional Expr [Block]
-    | Literal Text
-    deriving (Show, Eq)
-
-type Expr = Text
-
-data LoopExpr = LoopExpr
-  deriving Show
 
 -- parser
 
