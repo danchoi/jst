@@ -1,4 +1,6 @@
-# jstmpl
+# jst
+
+Simple json text templating.
 
 
 items.tmpl
