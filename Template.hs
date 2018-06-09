@@ -1,4 +1,4 @@
-module Lib where
+module Template where
 import Data.Aeson
 import Control.Applicative
 import Control.Lens
@@ -17,10 +17,10 @@ data Block =
       Loop Expr [Block]
     | Conditional Expr [Block]
     | Literal Text
-    deriving Show
+    deriving (Show, Eq)
 
 data Expr = Expr Text
-  deriving Show
+  deriving (Show, Eq)
 
 data LoopExpr = LoopExpr
   deriving Show

@@ -16,9 +16,25 @@ extra-source-files:  README.md
 executable jstmpl
   hs-source-dirs:      .
   main-is:             Main.hs
-  other-modules:       Lib
+  other-modules:       Template, Expr
   default-language:    Haskell2010
   build-depends:       base >= 4.7 && < 5
+                     , aeson
+                     , lens
+                     , lens-aeson
+                     , attoparsec
+                     , text
+                     , bytestring
+                     , optparse-applicative
+  default-extensions: OverloadedStrings
+
+test-suite tests
+  type: exitcode-stdio-1.0
+  main-is: Test.hs
+  hs-source-dirs: .
+  other-modules:       Template, Expr
+  build-depends:       base >= 4.7 && < 5
+                     , HUnit
                      , aeson
                      , lens
                      , lens-aeson
