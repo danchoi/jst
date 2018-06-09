@@ -1,0 +1,12 @@
+{{.title}}
+{{for item in .items-}}
+{{if $last}}and{{end}} {{item.name}}{{if ! $last}}, {{end-}}
+{{end-}}
+
+
+{{for item in .items-}}
+* #{{$index}} {{item.name}} {{.title}} {{if $last}}LAST{{end}}
+{{end-}}
+
+
+hello
