@@ -29,7 +29,7 @@ items.json
 
 Command:
 
-  jst items.tmpl items.json
+    jst items.tmpl items.json
 
 output:
 
