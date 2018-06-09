@@ -117,6 +117,15 @@ main = runTestTT . test $ [
                       (LoopVar "$index")
                       (LitExpr (Number 2.0)))
 
+  , "parse math expr" ~:
+        parseExpr ".a + 1"
+          @?= BinaryExpr Add
+                  (Expr Nothing (Key "a"))
+                  (LitExpr (Number 1.0))
+
+  , "eval test: math lit" ~:
+        evalTest "{\"a\": 1}" ".a + 1"
+          @?= (toJSON 2)
 
   , "eval test: == with lit" ~:
         evalTest "{\"a\": \"foo\"}" ".a == \"foo\"" 

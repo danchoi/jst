@@ -70,6 +70,15 @@ evalContext c (BinaryExpr op e1 e2) =
       evalBinary Or x y = if truthy v1 then v1 else v2
       evalBinary Equal x y = Bool $ v1 == v2 
       evalBinary NotEqual x y = Bool $ v1 /= v2 
+      evalBinary Sub x y = maybe Null Number $ (-) <$> toNum v1 <*> toNum v2
+      evalBinary Add x y = maybe Null Number $ (+) <$> toNum v1 <*> toNum v2
+      evalBinary Mult x y = maybe Null Number $ (*) <$> toNum v1 <*> toNum v2
+      evalBinary Div x y = maybe Null Number $ (/) <$> toNum v1 <*> toNum v2
+      toNum v = v ^? _Number 
+      
+
+
+  
 
 eval :: Value -> Path -> Value
 eval v (Key k) = fromMaybe Null $ v ^? key k

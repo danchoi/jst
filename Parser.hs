@@ -90,6 +90,8 @@ pBinaryExprs =
     -- in reverse order of precedence
         pBinaryExpr [And, Or]
     <|> pBinaryExpr [NotEqual, Equal]
+    <|> pBinaryExpr [Div, Mult]
+    <|> pBinaryExpr [Add, Sub]
 
 pVarExpr :: Parser Expr
 pVarExpr = Expr <$> (optional pVar) <*> pPath
@@ -124,10 +126,14 @@ pBinaryOp ops = choice
   $ map (\op -> token (toToken op) *> pure op) ops
 
 toToken :: BinaryOp -> Text
-toToken And = "&&"
+toToken And = "&&" -- 3
 toToken Or = "||"
-toToken Equal = "=="
+toToken Equal = "==" -- 4
 toToken NotEqual = "!="
+toToken Add = "+" -- 6
+toToken Sub = "-"
+toToken Mult = "*" -- 7
+toToken Div = "/"
 
 pLitExpr :: Parser Expr
 pLitExpr = LitExpr <$> 

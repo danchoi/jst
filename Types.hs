@@ -16,7 +16,8 @@ data Expr = Expr (Maybe Target) Path
           | LitExpr Value
   deriving (Show, Eq)
 
-data BinaryOp = And | Or | Equal | NotEqual
+data BinaryOp = And | Or | Equal | NotEqual 
+        | Sub | Add | Mult | Div
   deriving (Show, Eq)
 
 
