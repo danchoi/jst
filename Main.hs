@@ -18,5 +18,5 @@ main = do
   print bs
   v :: Value <- (either error id . eitherDecode) <$> BL8.getContents 
   print v
-  T.putStrLn $ evalTemplate v bs
+  T.putStr $ evalTemplate v bs
 
