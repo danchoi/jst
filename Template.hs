@@ -1,8 +1,6 @@
 module Template where
 import Data.Aeson
 import Control.Applicative
-import Control.Lens
-import Data.Aeson.Lens
 import Data.Attoparsec.Text
 import Data.Attoparsec.Combinator
 import Data.Text (Text)
@@ -19,8 +17,7 @@ data Block =
     | Literal Text
     deriving (Show, Eq)
 
-data Expr = Expr Text
-  deriving (Show, Eq)
+type Expr = Text
 
 data LoopExpr = LoopExpr
   deriving Show
@@ -63,7 +60,7 @@ cbrace = skipSpace >> string "}}" *> pure ()
 
 parseExpr :: Parser Expr
 parseExpr = 
-  Expr <$> takeWhile1 (notInClass " {}")
+  takeWhile1 (notInClass " {}")
 
 parseEnd :: Parser ()
 parseEnd = pure () <* string "{{end}}" 

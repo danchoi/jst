@@ -26,6 +26,7 @@ executable jstmpl
                      , text
                      , bytestring
                      , optparse-applicative
+                     , containers
   default-extensions: OverloadedStrings
 
 test-suite tests
@@ -42,4 +43,5 @@ test-suite tests
                      , text
                      , bytestring
                      , optparse-applicative
-  default-extensions: OverloadedStrings
+                     , containers
+  default-extensions: OverloadedStrings, ExtendedDefaultRules
