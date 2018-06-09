@@ -1,5 +1,8 @@
 module Main where
+import Lib
+import qualified Data.Text.IO as T
 
 main :: IO ()
 main = do
-  putStrLn "hello world"
+  s <- T.getContents
+  print $ parseTemplate s 

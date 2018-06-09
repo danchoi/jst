@@ -22,6 +22,8 @@ executable jstmpl
                      , aeson
                      , lens
                      , lens-aeson
+                     , attoparsec
                      , text
                      , bytestring
                      , optparse-applicative
+  default-extensions: OverloadedStrings
