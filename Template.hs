@@ -1,4 +1,4 @@
-module Template where
+module Parser where
 import Types
 import Data.Aeson
 import Control.Applicative
@@ -23,14 +23,14 @@ parseBlock =
 parseLoop :: Parser Block
 parseLoop = 
   Loop 
-    <$> (obrace *> token "loop" *> parseExpr <* cbrace)
+    <$> (obrace *> token "loop" *> pExpr <* cbrace)
     <*> many' parseBlock
     <* parseEnd
 
 parseConditional :: Parser Block
 parseConditional = 
   Conditional
-    <$> (obrace *> token "if" *> parseExpr <* cbrace)
+    <$> (obrace *> token "if" *> pExpr <* cbrace)
     <*> many' parseBlock
     <* parseEnd
 
@@ -48,10 +48,44 @@ obrace = string "{{" >> skipSpace *> pure ()
 cbrace :: Parser ()
 cbrace = skipSpace >> string "}}" *> pure ()
 
-parseExpr :: Parser Expr
-parseExpr = 
-  takeWhile1 (notInClass " {}")
 
 parseEnd :: Parser ()
 parseEnd = pure () <* string "{{end}}" 
+
+
+-- parsers
+
+pExpr :: Parser Expr
+pExpr = Expr <$> (optional pTarget) <*> pPath
+
+pPath :: Parser Path
+pPath = pKey <|> pArr
+
+pArr :: Parser Path
+pArr = 
+    stripWhiteSpace (
+      char '.' >> skipSpace >> string "[]" >> pure UnpackArray
+
+    )
+
+stripWhiteSpace :: Parser a -> Parser a
+stripWhiteSpace p = skipSpace *> p <* skipSpace
+
+pKey :: Parser Path
+pKey = do
+    _ <- skipSpace >> char '.' >> skipSpace
+    Key <$> pVar
+
+pVar :: Parser Text
+pVar = do
+  skipSpace
+  x <- satisfy (inClass "_A-Za-z")
+  xs <- takeWhile1 (inClass "A-Za-z0-9_")
+  skipSpace
+  pure $ x `T.cons` xs
+
+
+pTarget :: Parser Target
+pTarget = skipSpace >> takeWhile1 (not . inClass " .")
+
 

@@ -1,5 +1,5 @@
 module Main where
-import Template
+import Parser
 import qualified Data.Text.IO as T
 
 main :: IO ()

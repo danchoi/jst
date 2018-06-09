@@ -2,7 +2,7 @@ module Main where
 import Test.HUnit
 import Types
 import Expr
-import Template
+import Parser
 import Data.Attoparsec.Text
 import Data.Aeson.Lens
 import Data.Aeson
@@ -14,8 +14,8 @@ main :: IO Counts
 main = runTestTT . test $ [
 
     "parseLoop" ~: 
-        let inp = parseOnly parseLoop "{{loop foo}}x{{end}}"
-            exp = Loop "foo" [Literal "x"]
+        let inp = parseOnly parseLoop "{{loop .foo}}x{{end}}"
+            exp = Loop (Expr Nothing (Key "foo")) [Literal "x"]
         in Right exp @?= inp
 
   , "parse key path" ~:
