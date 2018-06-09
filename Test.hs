@@ -39,6 +39,16 @@ main = runTestTT . test $ [
             exp = Expr Nothing UnpackArray
         in Right exp @?= inp
 
+  , "parse negated conditional" ~:
+        parseOnly parseConditional "{{if ! $last}}{{end}}"
+        @?=
+        Right (Conditional False (LoopVar "$last") [])
+
+  , "parse conditional" ~:
+        parseOnly parseConditional "{{if $last}}{{end}}"
+        @?=
+        Right (Conditional True (LoopVar "$last") [])
+
   , "eval" ~:
         let v = "{\"a\": \"b\"}" ^?! _Value
         in eval v (Key "a") @=? String "b"

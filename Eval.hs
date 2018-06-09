@@ -32,9 +32,9 @@ evalBlock c@(Context v st) (Loop key e bs) =
                 c' = Context v (extra <> st)
             in evalBlock c' b
           | (idx, v') <- zip [(1 :: Int)..] vs, b <- bs ]
-evalBlock c (Conditional e bs) =
+evalBlock c (Conditional notNegate e bs) =
     let v = evalContext c e 
-    in if truthy v 
+    in if (if notNegate then id else not) $ truthy v 
        then 
           T.intercalate "" $ [ evalBlock c b |  b <- bs ] 
        else ""

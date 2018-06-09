@@ -35,15 +35,22 @@ parseLoop = do
 eatRestOfLine :: Parser ()
 eatRestOfLine = do
   _ <- takeWhile (inClass " \t")
-  _ <- char '\n'
+  _ <- optional (char '\n')
   return ()
 
 parseConditional :: Parser Block
-parseConditional = 
+parseConditional = do
+  _ <- obrace >> token "if" 
   Conditional
-    <$> (obrace *> token "if" *> pExpr <* cbrace)
+    <$> maybeNegate
+    <*> (pExpr <* cbrace)
     <*> many' parseBlock
     <* parseEnd
+  where maybeNegate = do
+          x <- optional (token "!")
+          case x of
+            Just _ -> pure False
+            _ -> pure True
 
 parseInterpolate :: Parser Block
 parseInterpolate =
