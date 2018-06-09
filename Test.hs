@@ -96,6 +96,10 @@ main = runTestTT . test $ [
   , "eval test: == with lit" ~:
         evalTest "{\"a\": \"foo\"}" ".a == \"foo\"" 
           @?= Bool True
+
+  , "eval test: != with lit" ~:
+        evalTest "{\"a\": \"foo\"}" ".a != \"foo\"" 
+          @?= Bool False
   ]
 
 parseExpr :: Text -> Expr
