@@ -6,9 +6,11 @@ import Parser
 import Data.Attoparsec.Text
 import Data.Aeson.Lens
 import Data.Aeson
+import Data.Text (Text)
 import Control.Lens hiding (Context)
 import qualified Data.Map as M
-
+import qualified Data.ByteString.Lazy.Char8 as BL8
+import Data.Maybe
 
 main :: IO Counts
 main = runTestTT . test $ [
@@ -29,16 +31,21 @@ main = runTestTT . test $ [
 
   , "parse {{if $last}} and {{end}}" ~:
         parseOnly (many' parseBlock) "{{if $last}} and {{end}}"
-        @?= Right [Conditional True (LoopVar "$last") [Literal " and "]]
+        @?= Right [Conditional (LoopVar "$last") [Literal " and "]]
 
   , "parse {{if $last}} and {{end}}{{item.name}}" ~:
         parseOnly (many' parseBlock) "{{if $last}} and {{end}}{{item.name}}"
-        @?= Right [Conditional True (LoopVar "$last") [Literal " and "],Interpolate (Expr (Just "item") (Key "name"))]
+        @?= Right [Conditional (LoopVar "$last") [Literal " and "],Interpolate (Expr (Just "item") (Key "name"))]
 
 
   , "parse key path" ~:
         let inp = parseOnly pExpr ".foo"
             exp = Expr Nothing (Key "foo")
+        in Right exp @?= inp
+
+  , "parse key path one letter" ~:
+        let inp = parseOnly pExpr ".f"
+            exp = Expr Nothing (Key "f")
         in Right exp @?= inp
 
   , "parse context and key path" ~:
@@ -51,15 +58,10 @@ main = runTestTT . test $ [
             exp = Expr Nothing UnpackArray
         in Right exp @?= inp
 
-  , "parse negated conditional" ~:
-        parseOnly parseConditional "{{if ! $last}}{{end}}"
-        @?=
-        Right (Conditional False (LoopVar "$last") [])
-
   , "parse conditional" ~:
         parseOnly parseConditional "{{if $last}}{{end}}"
         @?=
-        Right (Conditional True (LoopVar "$last") [])
+        Right (Conditional (LoopVar "$last") [])
 
   , "eval" ~:
         let v = "{\"a\": \"b\"}" ^?! _Value
@@ -70,4 +72,47 @@ main = runTestTT . test $ [
             context = Context Null [("item", v)]
             expr = Expr (Just "item") (Key "a")
         in evalContext context expr @=? String "b"
+
+  , "eval test 1" ~:
+        evalTest "{\"a\": \"b\"}" ".a"
+        @?= String "b"
+         
+  , "eval test: bool true" ~:
+        evalTest "{\"a\": true}" ".a" @?= Bool True
+
+  , "eval test: bool negate true" ~:
+        evalTest "{\"a\": true}" "! .a" @?= Bool False 
+
+  , "eval test: !=" ~:
+        evalTest "{\"a\": true, \"b\": false}" ".a != .b" 
+          @?= Bool True
+
+  , "parse expr: == with lit" ~:
+        parseExpr ".a == \"foo\"" 
+          @?= BinaryExpr Equal 
+                (Expr Nothing (Key "a"))
+                (LitExpr (String "foo"))
+
+  , "eval test: == with lit" ~:
+        evalTest "{\"a\": \"foo\"}" ".a == \"foo\"" 
+          @?= Bool True
   ]
+
+parseExpr :: Text -> Expr
+parseExpr s = either  
+      (error $ "Could not parse " ++ show s) id
+    $ parseOnly pExpr s
+
+-- | convenient for testing
+evalTest :: BL8.ByteString  -- json
+         -> Text -- ^ expression
+         -> Value
+evalTest bs expr =
+    let v = fromMaybe (error $ "cannot parse value " ++ show bs) $ bs ^? _Value
+        expr' = either 
+                  (\e -> error $ "cannot parse expr " ++ show expr ++ show e) id
+                  $ parseOnly pExpr expr
+        c = Context v []
+    in evalContext c expr'
+
+

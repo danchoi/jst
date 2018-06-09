@@ -4,14 +4,21 @@ import Data.Aeson
 
 data Block = 
       Loop Text Expr [Block]
-    | Conditional Bool Expr [Block]
+    | Conditional Expr [Block]
     | Interpolate Expr
     | Literal Text
     deriving (Show, Eq)
 
 data Expr = Expr (Maybe Target) Path
           | LoopVar Text -- $index, $last
+          | NegExpr Expr
+          | BinaryExpr BinaryOp Expr Expr
+          | LitExpr Value
   deriving (Show, Eq)
+
+data BinaryOp = And | Or | Equal | NotEqual
+  deriving (Show, Eq)
+
 
 type Target = Text  -- foo.bar : context is "foo"
 

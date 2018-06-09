@@ -32,9 +32,9 @@ evalBlock c@(Context v st) (Loop key e bs) =
                 c' = Context v (extra <> st)
             in evalBlock c' b
           | (idx, v') <- zip [(1 :: Int)..] vs, b <- bs ]
-evalBlock c (Conditional notNegate e bs) =
+evalBlock c (Conditional e bs) =
     let v = evalContext c e 
-    in if (if notNegate then id else not) $ truthy v 
+    in if truthy v 
        then 
           T.intercalate "" $ [ evalBlock c b |  b <- bs ] 
        else ""
@@ -56,6 +56,19 @@ evalContext (Context _ m) (Expr (Just k) p) =
     in eval v p
 evalContext (Context _ m) (LoopVar k) = 
     fromMaybe Null $ lookup k m
+
+evalContext c (NegExpr e) = Bool . not . truthy $ evalContext c e
+evalContext c (LitExpr v) = v
+evalContext c (BinaryExpr op e1 e2) = 
+      evalBinary op e1 e2
+    where
+      v1 = evalContext c e1
+      v2 = evalContext c e2
+      evalBinary :: BinaryOp -> Expr -> Expr -> Value
+      evalBinary And x y = if truthy v1 then v2 else (Bool False)
+      evalBinary Or x y = if truthy v1 then v1 else v2
+      evalBinary Equal x y = Bool $ v1 == v2 
+      evalBinary NotEqual x y = Bool $ v1 /= v2 
 
 eval :: Value -> Path -> Value
 eval v (Key k) = fromMaybe Null $ v ^? key k

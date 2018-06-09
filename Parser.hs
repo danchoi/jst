@@ -42,15 +42,9 @@ parseConditional :: Parser Block
 parseConditional = do
   _ <- obrace >> token "if" 
   Conditional
-    <$> maybeNegate
-    <*> (pExpr <* cbrace)
+    <$> (pExpr <* cbrace)
     <*> many' parseBlock
     <* parseEnd
-  where maybeNegate = do
-          x <- optional (token "!")
-          case x of
-            Just _ -> pure False
-            _ -> pure True
 
 parseInterpolate :: Parser Block
 parseInterpolate =
@@ -84,12 +78,57 @@ parseEnd =
 
 pExpr :: Parser Expr
 pExpr = 
-    pLoopIdx
+    pNegExpr
+    <|>
+    pBinaryExpr
+    <|>
+    pLoopVar
     <|>
     (Expr <$> (optional pVar) <*> pPath)
 
-pLoopIdx :: Parser Expr
-pLoopIdx = LoopVar <$> 
+pVarExpr :: Parser Expr
+pVarExpr = Expr <$> (optional pVar) <*> pPath
+
+pNegExpr :: Parser Expr
+pNegExpr =
+    NegExpr <$> (token "!" *> pExpr)
+
+pBinaryExpr :: Parser Expr
+pBinaryExpr = do
+  e1 <- inParens pExpr <|> pLitExpr <|> pVarExpr
+  op <- pBinaryOp
+  e2 <- inParens pExpr <|> pLitExpr <|> pVarExpr
+  pure $ BinaryExpr op e1 e2
+
+pBinaryOp :: Parser BinaryOp
+pBinaryOp = choice [
+    token "&&" *> pure And
+  , token "||" *> pure Or
+  , token "==" *> pure Equal
+  , token "!=" *> pure NotEqual
+  ]
+
+pLitExpr :: Parser Expr
+pLitExpr = LitExpr <$> 
+    choice [ 
+      Number . read <$> many1 digit
+    , String <$> litString
+    , Bool <$> (    (string "true" *> pure True) 
+                <|> (string "false" *> pure False))
+    ]
+
+litString :: Parser Text
+litString = 
+    (char '"' *> takeWhile (notInClass "\"") <* char '"') 
+    <|> 
+    (char '\'' *> takeWhile (notInClass "'") <* char '\'')
+
+
+inParens :: Parser a -> Parser a
+inParens p = char '(' *> p <* char ')'
+
+pLoopVar :: Parser Expr
+pLoopVar = LoopVar <$> 
   choice [
     token "$index"
   , token "$last"
@@ -117,7 +156,7 @@ pVar :: Parser Text
 pVar = do
   skipSpace
   x <- satisfy (inClass "$_A-Za-z")
-  xs <- takeWhile1 (inClass "A-Za-z0-9_")
+  xs <- takeWhile (inClass "A-Za-z0-9_")
   skipSpace
   pure $ x `T.cons` xs
 
