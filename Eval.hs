@@ -24,9 +24,9 @@ evalBlock c (Interpolate e) = evalS $ evalContext c e
 evalBlock c@(Context v st) (Loop key e bs) = 
     let vs = evalContext c e ^.. values
     in T.intercalate "" $ 
-          [ let c' = Context v ((key, v'):st)
+          [ let c' = Context v ((key, v'):("$index", toJSON idx):st)
             in evalBlock c' b
-          | v' <- vs, b <- bs ]
+          | (idx, v') <- zip [(1 :: Int)..] vs, b <- bs ]
 evalBlock c (Conditional e bs) =
     let v = evalContext c e 
     in if truthy v 
@@ -49,6 +49,8 @@ evalContext (Context v m) (Expr Nothing p) = eval v p
 evalContext (Context _ m) (Expr (Just k) p) = 
     let v = fromMaybe Null $ lookup k m
     in eval v p
+evalContext (Context _ m) (LoopVar k) = 
+    fromMaybe Null $ lookup k m
 
 eval :: Value -> Path -> Value
 eval v (Key k) = fromMaybe Null $ v ^? key k
@@ -56,6 +58,10 @@ eval v UnpackArray = undefined
 
 evalS :: Value -> Text
 evalS (String s) = s
+evalS v@(Number n) = 
+    maybe "?" T.pack $ 
+          v ^? _Integral . to show
+      <|> v ^? _Double . to show
 evalS v = fromMaybe "?" $ v ^? _String
 
 

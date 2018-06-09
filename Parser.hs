@@ -49,11 +49,9 @@ parseInterpolate :: Parser Block
 parseInterpolate =
     Interpolate <$> (obrace *> pExpr <* cbrace)
 
-
 parseLit :: Parser Block
 parseLit = 
   Literal <$> takeWhile1 (notInClass "{")
-
 
 token :: Text -> Parser Text
 token s = skipSpace *> string s <* skipSpace
@@ -73,7 +71,13 @@ parseEnd =
 -- parsers
 
 pExpr :: Parser Expr
-pExpr = Expr <$> (optional pTarget) <*> pPath
+pExpr = 
+    pLoopIdx
+    <|>
+    Expr <$> (optional pTarget) <*> pPath
+
+pLoopIdx :: Parser Expr
+pLoopIdx = LoopVar <$> string "$index" 
 
 pPath :: Parser Path
 pPath = pKey <|> pArr
@@ -85,18 +89,18 @@ pArr =
 
     )
 
-stripWhiteSpace :: Parser a -> Parser a
-stripWhiteSpace p = skipSpace *> p <* skipSpace
-
 pKey :: Parser Path
 pKey = do
     _ <- skipSpace >> char '.' >> skipSpace
     Key <$> pVar
 
+stripWhiteSpace :: Parser a -> Parser a
+stripWhiteSpace p = skipSpace *> p <* skipSpace
+
 pVar :: Parser Text
 pVar = do
   skipSpace
-  x <- satisfy (inClass "_A-Za-z")
+  x <- satisfy (inClass "$_A-Za-z")
   xs <- takeWhile1 (inClass "A-Za-z0-9_")
   skipSpace
   pure $ x `T.cons` xs

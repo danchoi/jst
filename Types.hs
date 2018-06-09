@@ -9,10 +9,8 @@ data Block =
     | Literal Text
     deriving (Show, Eq)
 
-data LoopExpr = LoopExpr
-  deriving Show
-
 data Expr = Expr (Maybe Target) Path
+          | LoopVar Text -- {{$index}}
   deriving (Show, Eq)
 
 type Target = Text  -- foo.bar : context is "foo"
