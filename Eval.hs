@@ -1,5 +1,6 @@
 module Eval where
 import Types
+import Data.Monoid
 import Control.Applicative
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -24,7 +25,11 @@ evalBlock c (Interpolate e) = evalS $ evalContext c e
 evalBlock c@(Context v st) (Loop key e bs) = 
     let vs = evalContext c e ^.. values
     in T.intercalate "" $ 
-          [ let c' = Context v ((key, v'):("$index", toJSON idx):st)
+          [ let extra = [ (key, v')
+                        , ("$index", toJSON idx)
+                        , ("$last", Bool $ idx == length vs)
+                        ]
+                c' = Context v (extra <> st)
             in evalBlock c' b
           | (idx, v') <- zip [(1 :: Int)..] vs, b <- bs ]
 evalBlock c (Conditional e bs) =
@@ -62,6 +67,7 @@ evalS v@(Number n) =
     maybe "?" T.pack $ 
           v ^? _Integral . to show
       <|> v ^? _Double . to show
+evalS (Bool n) = T.toLower . T.pack . show $ n
 evalS v = fromMaybe "?" $ v ^? _String
 
 

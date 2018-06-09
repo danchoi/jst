@@ -28,7 +28,7 @@ parseLoop = do
   _ <- obrace *> token "for"
   Loop 
     <$> pVar
-    <*> (token "in" *> pExpr <* cbrace <* eatRestOfLine)
+    <*> (token "in" *> pExpr <* cbrace)
     <*> many' parseBlock
     <* parseEnd
 
@@ -60,13 +60,18 @@ obrace :: Parser ()
 obrace = string "{{" >> skipSpace *> pure ()
 
 cbrace :: Parser ()
-cbrace = skipSpace >> string "}}" *> pure ()
+cbrace = do
+  -- -}} eats rest of line
+  -- }} does not
+  _ <- skipSpace 
+  (string "-}}" *> pure () <* eatRestOfLine)
+  <|>
+  (string "}}" *> pure ())
 
 
 parseEnd :: Parser ()
 parseEnd = 
-  pure () <* string "{{end}}" <* eatRestOfLine
-
+  obrace >> string "end" >> cbrace >> pure () 
 
 -- parsers
 
@@ -77,7 +82,11 @@ pExpr =
     Expr <$> (optional pTarget) <*> pPath
 
 pLoopIdx :: Parser Expr
-pLoopIdx = LoopVar <$> string "$index" 
+pLoopIdx = LoopVar <$> 
+  choice [
+    string "$index"
+  , string "$last"
+  ]
 
 pPath :: Parser Path
 pPath = pKey <|> pArr

@@ -10,7 +10,7 @@ data Block =
     deriving (Show, Eq)
 
 data Expr = Expr (Maybe Target) Path
-          | LoopVar Text -- {{$index}}
+          | LoopVar Text -- $index, $last
   deriving (Show, Eq)
 
 type Target = Text  -- foo.bar : context is "foo"
