@@ -8,8 +8,8 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 
-parseTemplate :: Text -> Either String [Block]
-parseTemplate s = 
+parseBlocks :: Text -> Either String [Block]
+parseBlocks s = 
     parseOnly (many' parseBlock) s
 
 -- parser
@@ -18,12 +18,16 @@ parseBlock :: Parser Block
 parseBlock = 
       parseLoop
   <|> parseConditional
+  <|> parseInterpolate
   <|> parseLit
 
+-- | for item in expr
 parseLoop :: Parser Block
-parseLoop = 
+parseLoop = do
+  _ <- obrace *> token "for"
   Loop 
-    <$> (obrace *> token "loop" *> pExpr <* cbrace)
+    <$> pVar
+    <*> (token "in" *> pExpr <* cbrace)
     <*> many' parseBlock
     <* parseEnd
 
@@ -33,6 +37,11 @@ parseConditional =
     <$> (obrace *> token "if" *> pExpr <* cbrace)
     <*> many' parseBlock
     <* parseEnd
+
+parseInterpolate :: Parser Block
+parseInterpolate =
+    Interpolate <$> (obrace *> pExpr <* cbrace)
+
 
 parseLit :: Parser Block
 parseLit = 

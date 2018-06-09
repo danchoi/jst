@@ -3,14 +3,14 @@ import Data.Text (Text)
 import Data.Aeson
 
 data Block = 
-      Loop Expr [Block]
+      Loop Text Expr [Block]
     | Conditional Expr [Block]
+    | Interpolate Expr
     | Literal Text
     deriving (Show, Eq)
 
 data LoopExpr = LoopExpr
   deriving Show
-
 
 data Expr = Expr (Maybe Target) Path
   deriving (Show, Eq)
@@ -18,7 +18,7 @@ data Expr = Expr (Maybe Target) Path
 type Target = Text  -- foo.bar : context is "foo"
 
 data Context = Context
-    Value
+    Value -- root Value
     [(Text, Value)] -- stores the context of loops as a scope stack
 
 data Path = 
