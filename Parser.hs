@@ -1,4 +1,5 @@
 module Parser where
+import Prelude hiding (takeWhile)
 import Types
 import Data.Aeson
 import Control.Applicative
@@ -27,9 +28,15 @@ parseLoop = do
   _ <- obrace *> token "for"
   Loop 
     <$> pVar
-    <*> (token "in" *> pExpr <* cbrace)
+    <*> (token "in" *> pExpr <* cbrace <* eatRestOfLine)
     <*> many' parseBlock
     <* parseEnd
+
+eatRestOfLine :: Parser ()
+eatRestOfLine = do
+  _ <- takeWhile (inClass " \t")
+  _ <- char '\n'
+  return ()
 
 parseConditional :: Parser Block
 parseConditional = 
@@ -59,7 +66,8 @@ cbrace = skipSpace >> string "}}" *> pure ()
 
 
 parseEnd :: Parser ()
-parseEnd = pure () <* string "{{end}}" 
+parseEnd = 
+  pure () <* string "{{end}}" <* eatRestOfLine
 
 
 -- parsers
