@@ -3,10 +3,8 @@
 {{if $last}}and {{end}}{{item.name}}{{if (! $last) && $index != 1}},{{end-}}
  {{end-}}
 
-
 {{for item in .items-}}
 * {{$index}}. {{item.name}} {{.title}} {{if $last}}LAST{{end}} {{$length}}
 {{end-}}
-
 
 hello
