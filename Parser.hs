@@ -58,7 +58,7 @@ parseInterpolate =
 
 parseLit :: Parser Block
 parseLit = 
-  Literal <$> takeWhile1 (notInClass "{")
+  Literal <$> takeWhile1 (notInClass "{") <?> "parseLit"
 
 token :: Text -> Parser Text
 token s = skipSpace *> string s <* skipSpace
@@ -78,7 +78,7 @@ cbrace = do
 
 parseEnd :: Parser ()
 parseEnd = 
-  obrace >> string "end" >> cbrace >> pure () 
+  obrace >> token "end" >> cbrace
 
 -- parsers
 
@@ -86,13 +86,13 @@ pExpr :: Parser Expr
 pExpr = 
     pLoopIdx
     <|>
-    Expr <$> (optional pTarget) <*> pPath
+    (Expr <$> (optional pVar) <*> pPath)
 
 pLoopIdx :: Parser Expr
 pLoopIdx = LoopVar <$> 
   choice [
-    string "$index"
-  , string "$last"
+    token "$index"
+  , token "$last"
   ]
 
 pPath :: Parser Path
@@ -120,9 +120,4 @@ pVar = do
   xs <- takeWhile1 (inClass "A-Za-z0-9_")
   skipSpace
   pure $ x `T.cons` xs
-
-
-pTarget :: Parser Target
-pTarget = skipSpace >> takeWhile1 (not . inClass " .")
-
 

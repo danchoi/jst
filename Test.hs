@@ -23,6 +23,18 @@ main = runTestTT . test $ [
             exp = Interpolate (Expr Nothing (Key "foo"))
         in Right exp @?= inp
 
+  , "don't parse {{end}} by itself" ~:
+        parseOnly (many' parseBlock) "{{end}}"
+        @=? Right []
+
+  , "parse {{if $last}} and {{end}}" ~:
+        parseOnly (many' parseBlock) "{{if $last}} and {{end}}"
+        @?= Right [Conditional True (LoopVar "$last") [Literal " and "]]
+
+  , "parse {{if $last}} and {{end}}{{item.name}}" ~:
+        parseOnly (many' parseBlock) "{{if $last}} and {{end}}{{item.name}}"
+        @?= Right [Conditional True (LoopVar "$last") [Literal " and "],Interpolate (Expr (Just "item") (Key "name"))]
+
 
   , "parse key path" ~:
         let inp = parseOnly pExpr ".foo"
