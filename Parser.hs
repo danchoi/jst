@@ -149,11 +149,12 @@ inParens :: Parser a -> Parser a
 inParens p = char '(' *> p <* char ')'
 
 pLoopVar :: Parser Expr
-pLoopVar = LoopVar <$> 
-  choice [
-    token "$index"
-  , token "$last"
-  ]
+pLoopVar = do
+  skipSpace 
+  x <- char '$'
+  xs <- pVar
+  pure $ LoopVar (x `T.cons` xs)
+    
 
 pPath :: Parser Path
 pPath = pKey <|> pArr

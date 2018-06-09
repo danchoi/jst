@@ -10,7 +10,7 @@ data Block =
     deriving (Show, Eq)
 
 data Expr = Expr (Maybe Target) Path
-          | LoopVar Text -- $index, $last
+          | LoopVar Text -- $index, $last, $length
           | NegExpr Expr
           | BinaryExpr BinaryOp Expr Expr
           | LitExpr Value

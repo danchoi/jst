@@ -28,6 +28,7 @@ evalBlock c@(Context v st) (Loop key e bs) =
           [ let extra = [ (key, v')
                         , ("$index", toJSON idx)
                         , ("$last", Bool $ idx == length vs)
+                        , ("$length", toJSON $ length vs)
                         ]
                 c' = Context v (extra <> st)
             in evalBlock c' b
