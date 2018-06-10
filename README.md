@@ -119,7 +119,7 @@ $last | boolean | is on last iteration
 ## Conditional blocks
 
     {{ if .foo == 'bar' -}} 
-      Foo is bar!
+    Foo is bar!
     {{ end -}}
       
 
