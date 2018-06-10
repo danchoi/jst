@@ -62,9 +62,9 @@ All template expressions are enclosed by double braces.
     # conditional block
     {{ if .foo }}YES{{ end }}
 
-If use `-}}` to close the expression, then all whitespace
-after the template up to and including the following newline
-is suppressed from the output.
+If use `-}}` to close the expression, then all whitespace after the
+template expression up to and including the following newline is
+suppressed from the output.
 
     {{ for item in .foo -}} 
     {{ item.name }}
