@@ -68,8 +68,7 @@ is suppressed from the output.
 
     {{ for item in .foo -}} 
     {{ item.name }}
-    {{ end -}}
-    Hello
+    {{ end }}
 
 This is useful when you don't want template control expressions to 
 create blank lines but want the control syntax to readable. To
@@ -77,7 +76,7 @@ get the same output as the above without the whitespace suppression,
 you'd have to write this:
 
     {{ for item in .foo }}{{ item.name }}
-    {{ end }}Hello
+    {{ end }}
 
 ## Interpolation
 
