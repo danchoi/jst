@@ -117,7 +117,7 @@ Conditional blocks are supported:
 
     {{ if .foo == 'bar' -}} 
     Foo is bar!
-    {{ else }}
+    {{ else -}}
     Foo is not bar
     {{ end -}}
 
