@@ -99,7 +99,7 @@ that is an array, like this:
     # at the top level 
     {{ for item in .items }}
    
-    # inner loop
+    # nesting loops
     {{ for item in .items }}
       {{ for item2 in item.items }}
     
