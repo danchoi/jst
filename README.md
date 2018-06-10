@@ -116,19 +116,17 @@ $last | boolean | is on last iteration
 
 ## Conditional blocks
 
-Simple conditional blocks are supported:
+Conditional blocks are supported:
 
     {{ if .foo == 'bar' -}} 
     Foo is bar!
     {{ end -}}
-
 
     {{ if .foo == 'bar' -}} 
     Foo is bar!
     {{ else }}
     Foo is not bar
     {{ end -}}
-
 
     {{ if .foo == 'bar' -}} 
     Foo is bar!
@@ -137,6 +135,7 @@ Simple conditional blocks are supported:
     {{ else -}}
     Foo is not bar
     {{ end -}}
+
 
 ## Operators
 
