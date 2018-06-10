@@ -222,9 +222,9 @@ main = runTestTT . test $ [
         Right (Loop "x" (VarExpr Nothing UnpackArray) [])
 
   , "eval loop block with unpack array" ~:
-        evalTemplate (toValue "{\"title\":\"foo\"}, {\"title\":\"bar\"}]")
-                     [Loop "x" (VarExpr Nothing UnpackArray) []]
-        @?= ""
+        evalTemplate (toValue "[{\"title\":\"foo\"}, {\"title\":\"bar\"}]")
+                     [Loop "x" (VarExpr Nothing UnpackArray) [Literal "x"]]
+        @?= "xx"
   ]
 
 parseExpr :: Text -> Expr
