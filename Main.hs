@@ -12,18 +12,19 @@ import qualified Data.ByteString.Lazy.Char8 as BL8
 import System.Environment
 import Options.Applicative
 import System.IO
+import Text.Pretty.Simple
 
 data Options = Options {
-      debug :: Bool
+      debugTemplate :: Bool
     , template :: FilePath
-    , jsonInput :: FilePath
+    , jsonInput :: Maybe FilePath
     }
 
 options :: Parser Options
 options = Options
-  <$> switch (short 'v' <> help "Debug parsing")
+  <$> switch (short 'd' <> help "Debug parsed template and data")
   <*> strArgument (metavar "TEMPLATE")
-  <*> strArgument (metavar "JSONFILE" <> help "Use - for stdin")
+  <*> optional (strArgument (metavar "JSONFILE" <> help "Use - for stdin"))
 
 opts :: ParserInfo Options
 opts = info (helper <*> options)
@@ -33,14 +34,18 @@ main :: IO ()
 main = do
   o <- execParser opts
   tmpl <- T.readFile $ template o
-  let bs = either error id $ parseBlocks tmpl
+  let blocks = either error id $ parseBlocks tmpl
   s <- case jsonInput o of
-          "-" -> BL8.getContents 
-          fp -> BL8.readFile fp
-  let v :: Value = either error id . eitherDecode $ s
-  when (debug o) $ do
-    print bs
-    print v
-  T.putStr $ evalTemplate v bs
+          Just "-" -> Just <$> BL8.getContents 
+          Just fp -> Just <$> BL8.readFile fp
+          Nothing -> pure Nothing
+  case s of
+    Just s' -> do 
+        let v :: Value = either error id . eitherDecode $ s'
+        T.putStr $ evalTemplate v blocks
+    Nothing -> pure ()
+  when (debugTemplate o) $ do
+      T.putStrLn "<parsed template>"
+      pPrintNoColor blocks
 
 

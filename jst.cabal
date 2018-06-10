@@ -28,6 +28,7 @@ executable jst
                      , bytestring
                      , optparse-applicative
                      , containers
+                     , pretty-simple
   default-extensions: OverloadedStrings
 
 test-suite tests
