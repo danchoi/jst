@@ -49,7 +49,7 @@ apple and orange
 hello
 ```
 
-## List of template expressions 
+## Template expressions 
 
 All template expressions are enclosed by double braces.
 
@@ -97,14 +97,14 @@ If the top-level value is an object, you have to specify a property
 that is an array, like this:
 
     # at the top level 
-    for item in .items  
+    {{ for item in .items }}
    
     # inner loop
-    for item in .items 
-      for item2 in item.items  
+    {{ for item in .items }}
+      {{ for item2 in item.items }}
     
     # top level value is an array
-    for item in [] 
+    {{ for item in [] }}
 
 Within a loop, these variables are in scope:
 
