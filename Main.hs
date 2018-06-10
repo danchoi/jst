@@ -45,6 +45,8 @@ main = do
         T.putStr $ evalTemplate v blocks
     Nothing -> pure ()
   when (debugTemplate o) $ do
+      T.putStrLn "<rawtemplate>"
+      T.putStr tmpl
       T.putStrLn "<parsed template>"
       pPrintNoColor blocks
 
