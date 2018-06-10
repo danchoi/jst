@@ -40,11 +40,10 @@ eatRestOfLine = do
 
 parseConditional :: Parser Block
 parseConditional = do
-  _ <- obrace >> token "if" 
   Conditional
-    <$> ( (,) <$> (pExpr <* cbrace) <*> many' parseBlock )
+    <$> ( (,) <$> (obrace *> token "if" *> pExpr <* cbrace) <*> many' parseBlock )
     <*> many' ( 
-          (,) <$> (obrace *> token "else if" *> pExpr <* cbrace)
+          (,) <$> (obrace *> token "else" *> token "if" *> pExpr <* cbrace)
               <*> many' parseBlock
         ) 
     <*> ( 
@@ -93,9 +92,7 @@ pExpr =
         pBinaryExprs
     <|> inParens pExpr
     <|> pNegExpr
-    <|> pLoopVar 
-    <|> pVarExpr
-    <|> pLitExpr 
+    <|> pAtoms
 
 pBinaryExprs :: Parser Expr
 pBinaryExprs = 
@@ -110,11 +107,7 @@ pVarExpr = VarExpr <$> (optional pVar) <*> pPath
 
 pNegExpr :: Parser Expr
 pNegExpr =
-    NegExpr <$> (token "!" *> (inParens pExpr <|> atoms))
-  where atoms = pLoopVar 
-            <|> pVarExpr
-            <|> pLitExpr 
-    
+    NegExpr <$> (token "!" *> (inParens pExpr <|> pAtoms))
 
 pBinaryExpr :: [BinaryOp] -> Parser Expr
 pBinaryExpr ops = do
@@ -129,9 +122,11 @@ pBinaryExpr ops = do
                   <|> pExprNotBinary 
         pExprNotBinary = 
             pNegExpr
-            <|> pLoopVar
-            <|> pVarExpr
-            <|> pLitExpr 
+            <|> 
+            pAtoms
+
+pAtoms :: Parser Expr
+pAtoms = stripWhiteSpace (pLoopVar <|> pLitExpr <|> pVarExpr)
 
 pBinaryOp :: [BinaryOp] -> Parser BinaryOp
 pBinaryOp ops = choice 
@@ -156,6 +151,7 @@ pLitExpr = LitExpr <$>
                 <|> (string "false" *> pure False))
     ]
 
+-- TODO doesn't allow for embedded escaped double quotes
 litString :: Parser Text
 litString = 
     (char '"' *> takeWhile (notInClass "\"") <* char '"') 
@@ -164,7 +160,7 @@ litString =
 
 
 inParens :: Parser a -> Parser a
-inParens p = char '(' *> p <* char ')'
+inParens p = char '(' *> skipSpace *> p <* skipSpace <* char ')'
 
 pLoopVar :: Parser Expr
 pLoopVar = do

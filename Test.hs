@@ -16,12 +16,12 @@ main :: IO Counts
 main = runTestTT . test $ [
 
     "parseLoop" ~: 
-        let inp = parseOnly parseLoop "{{for item in .foo}}x{{end}}"
+        let inp = parseOnly parseLoop "{{for item in .foo }}x{{end}}"
             exp = Loop "item" (VarExpr Nothing (Key "foo")) [Literal "x"]
         in Right exp @?= inp
 
   , "parse interpolation" ~: 
-        let inp = parseOnly parseBlock "{{.foo}}"
+        let inp = parseOnly parseBlock "{{.foo }}"
             exp = Interpolate (VarExpr Nothing (Key "foo"))
         in Right exp @?= inp
 
@@ -56,8 +56,9 @@ main = runTestTT . test $ [
                       [Literal "y"]
         )
 
+
   , "parse conditional with expr" ~:
-        parseOnly parseConditional "{{if true}}x{{end}}"
+        parseOnly parseConditional "{{ if true }}x{{end}}"
         @?=
         Right (
           Conditional 
@@ -69,20 +70,19 @@ main = runTestTT . test $ [
         )
 
   , "parse conditional with binary expr" ~:
-        parseOnly parseConditional "{{if .last == true}} x {{else}}y{{end}}"
+        parseOnly parseConditional "{{if .foo == true}} x {{else}}y{{end}}"
         @?=
         Right (
           Conditional 
               (
                 BinaryExpr Equal 
-                    (LoopVar "$last")
+                    (VarExpr Nothing (Key "foo"))
                     (LitExpr (Bool True))
-              , [Literal "x"]
+              , [Literal " x "]
               )
               []
               [Literal "y"]
         )
-
 
   , "parse conditional with `else if`" ~:
         parseOnly parseConditional "{{if $last}}x{{else if .foo}}y{{end}}"
@@ -152,6 +152,10 @@ main = runTestTT . test $ [
              [Literal "is neither AAA nor bar"]
           ]
         @?= "is bar"
+
+  , "parse bool lit with surrounding space" ~:
+        parseOnly pExpr " true "
+        @?= Right (LitExpr (Bool True))
 
   , "parse key path" ~:
         let inp = parseOnly pExpr ".foo"
