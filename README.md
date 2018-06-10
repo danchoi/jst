@@ -33,6 +33,10 @@ Command:
 
     jst items.tmpl items.json
 
+    or 
+
+    jst items.tmpl - < items.json
+
 output:
 
 ```
