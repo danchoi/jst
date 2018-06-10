@@ -9,7 +9,7 @@ import Data.Aeson
 import Control.Lens hiding (Context)
 import Data.Aeson.Lens 
 import Data.Attoparsec.Text
-
+import Data.Scientific (Scientific)
 
 evalTemplate :: Value -> [Block] -> Text
 evalTemplate v bs = evalBlocks v bs
@@ -65,20 +65,22 @@ evalContext c (BinaryExpr op e1 e2) =
     where
       v1 = evalContext c e1
       v2 = evalContext c e2
+
       evalBinary :: BinaryOp -> Expr -> Expr -> Value
       evalBinary And x y = if truthy v1 then v2 else (Bool False)
       evalBinary Or x y = if truthy v1 then v1 else v2
       evalBinary Equal x y = Bool $ v1 == v2 
       evalBinary NotEqual x y = Bool $ v1 /= v2 
-      evalBinary Sub x y = maybe Null Number $ (-) <$> toNum v1 <*> toNum v2
-      evalBinary Add x y = maybe Null Number $ (+) <$> toNum v1 <*> toNum v2
-      evalBinary Mult x y = maybe Null Number $ (*) <$> toNum v1 <*> toNum v2
-      evalBinary Div x y = maybe Null Number $ (/) <$> toNum v1 <*> toNum v2
+      evalBinary Sub x y = doMath (-)
+      evalBinary Add x y = doMath (+)
+      evalBinary Mult x y = doMath (*)
+      evalBinary Div x y = doMath (/)
+
+      doMath :: (Scientific -> Scientific -> Scientific) -> Value
+      doMath op = maybe Null Number $ op <$> toNum v1 <*> toNum v2
+
+      toNum :: Value -> Maybe Scientific
       toNum v = v ^? _Number 
-      
-
-
-  
 
 eval :: Value -> Path -> Value
 eval v (Key k) = fromMaybe Null $ v ^? key k
