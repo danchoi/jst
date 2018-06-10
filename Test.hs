@@ -34,6 +34,7 @@ main = runTestTT . test $ [
         @?= Right [
             Conditional (LoopVar "$last",  [Literal " and "]) [] []
           ]
+
   , "parse {{if $last}} and {{end}}{{item.name}}" ~:
         parseOnly (many' parseBlock) "{{if $last}} and {{end}}{{item.name}}"
         @?= Right [
@@ -54,6 +55,34 @@ main = runTestTT . test $ [
                       []
                       [Literal "y"]
         )
+
+  , "parse conditional with expr" ~:
+        parseOnly parseConditional "{{if true}}x{{end}}"
+        @?=
+        Right (
+          Conditional 
+              (
+                LitExpr (Bool True)
+              , [Literal "x"]
+              )
+              [] []
+        )
+
+  , "parse conditional with binary expr" ~:
+        parseOnly parseConditional "{{if .last == true}} x {{else}}y{{end}}"
+        @?=
+        Right (
+          Conditional 
+              (
+                BinaryExpr Equal 
+                    (LoopVar "$last")
+                    (LitExpr (Bool True))
+              , [Literal "x"]
+              )
+              []
+              [Literal "y"]
+        )
+
 
   , "parse conditional with `else if`" ~:
         parseOnly parseConditional "{{if $last}}x{{else if .foo}}y{{end}}"
