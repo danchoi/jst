@@ -38,7 +38,6 @@ main = runTestTT . test $ [
         @?= Right [Conditional (LoopVar "$last") [Literal " and "]
                   ,Interpolate (VarExpr (Just "item") (Key "name"))]
 
-
   , "parse key path" ~:
         let inp = parseOnly pExpr ".foo"
             exp = VarExpr Nothing (Key "foo")

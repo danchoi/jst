@@ -86,9 +86,8 @@ Interpolation is handled through this syntax:
     # foo property of the top level json value
     {{ .foo }} 
 
-    # foo property of a value aliased `item` in a loop (see below)
+    # foo property of a value aliased as `item` in a loop (see below)
     {{ item.foo }} 
-
 
 ## For loops
 
@@ -105,7 +104,7 @@ that is an array, like this:
       for item2 in item.items  
     
     # top level value is an array
-    for item [] 
+    for item in [] 
 
 Within a loop, these variables are in scope:
 
@@ -114,20 +113,27 @@ variable | type | desc
 $index | number | iteration number, starting with 1
 $length | number | total number of items for loop
 $last | boolean | is on last iteration
-    
 
 ## Conditional blocks
+
+Simple conditional blocks are supported:
 
     {{ if .foo == 'bar' -}} 
     Foo is bar!
     {{ end -}}
-      
 
 ## Operators
 
 Unary negation and the following binary operators are supported:
 
-    + | - | * | / | == | != | && | ||
+* + 
+* - 
+* * 
+* / 
+* == 
+* != 
+* && 
+* ||
 
 You can also group expressions with parentheses.
 
