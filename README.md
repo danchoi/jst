@@ -145,7 +145,7 @@ Unary negation and the following binary operators are supported:
 
 You can also group expressions with parentheses.
 
-    {{ if ! $last & ( .status == 'active' ) }}
+    {{ if ! $last && ( .status == 'active' ) }}
 
 
 
