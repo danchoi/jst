@@ -4,7 +4,10 @@ import Data.Aeson
 
 data Block = 
       Loop Text Expr [Block]
-    | Conditional Expr [Block]
+    | Conditional 
+        (Expr, [Block]) -- if 
+        [(Expr, [Block])] -- else if 
+        [Block] -- else
     | Interpolate Expr
     | Literal Text
     deriving (Show, Eq)

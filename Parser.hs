@@ -42,8 +42,20 @@ parseConditional :: Parser Block
 parseConditional = do
   _ <- obrace >> token "if" 
   Conditional
-    <$> (pExpr <* cbrace)
-    <*> many' parseBlock
+    <$> ( (,) <$> (pExpr <* cbrace) <*> many' parseBlock )
+    <*> many' ( 
+          (,) <$> (obrace *> token "else if" *> pExpr <* cbrace)
+              <*> many' parseBlock
+        ) 
+    <*> ( 
+          ( 
+            (obrace *> token "else" <* cbrace) 
+            *> 
+            many' parseBlock 
+          )
+          <|> 
+          pure []
+        )
     <* parseEnd
 
 parseInterpolate :: Parser Block

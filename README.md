@@ -122,6 +122,22 @@ Simple conditional blocks are supported:
     Foo is bar!
     {{ end -}}
 
+
+    {{ if .foo == 'bar' -}} 
+    Foo is bar!
+    {{ else }}
+    Foo is not bar
+    {{ end -}}
+
+
+    {{ if .foo == 'bar' -}} 
+    Foo is bar!
+    {{ else if .foo == 'quux' -}}
+    Foo is quux
+    {{ else -}}
+    Foo is not bar
+    {{ end -}}
+
 ## Operators
 
 Unary negation and the following binary operators are supported:

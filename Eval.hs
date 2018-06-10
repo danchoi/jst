@@ -24,7 +24,7 @@ evalBlock _ (Literal s) = s
 evalBlock c (Interpolate e) = evalS $ evalContext c e 
 evalBlock c@(Context v st) (Loop key e bs) = 
     let vs = evalContext c e ^.. values
-    in T.intercalate "" $ 
+    in T.concat $ 
           [ let extra = [ (key, v')
                         , ("$index", toJSON idx)
                         , ("$last", Bool $ idx == length vs)
@@ -33,13 +33,21 @@ evalBlock c@(Context v st) (Loop key e bs) =
                 c' = Context v (extra <> st)
             in evalBlock c' b
           | (idx, v') <- zip [(1 :: Int)..] vs, b <- bs ]
-evalBlock c (Conditional e bs) =
-    let v = evalContext c e 
-    in if truthy v 
-       then 
-          T.intercalate "" $ [ evalBlock c b |  b <- bs ] 
-       else ""
-
+evalBlock c (Conditional ifBranch ifElses elseBlocks) =
+    let 
+        bs :: [First Text]
+        bs = [ let v = evalContext c expr
+                in First $
+                    if truthy v
+                    then Just $ T.concat $ map (evalBlock c) blocks
+                    else Nothing
+              | (expr, blocks) <- ifBranch:ifElses ]
+        elseOut :: Text
+        elseOut = T.concat $ 
+                      [ evalBlock c b | b <- elseBlocks ] 
+        chosenBranch :: Maybe Text
+        chosenBranch = getFirst $ mconcat bs
+    in fromMaybe elseOut chosenBranch
 
 truthy :: Value -> Bool
 truthy (Bool False) = False

@@ -31,12 +31,98 @@ main = runTestTT . test $ [
 
   , "parse {{if $last}} and {{end}}" ~:
         parseOnly (many' parseBlock) "{{if $last}} and {{end}}"
-        @?= Right [Conditional (LoopVar "$last") [Literal " and "]]
-
+        @?= Right [
+            Conditional (LoopVar "$last",  [Literal " and "]) [] []
+          ]
   , "parse {{if $last}} and {{end}}{{item.name}}" ~:
         parseOnly (many' parseBlock) "{{if $last}} and {{end}}{{item.name}}"
-        @?= Right [Conditional (LoopVar "$last") [Literal " and "]
+        @?= Right [
+                   Conditional (LoopVar "$last", [Literal " and "]) [] []
+
                   ,Interpolate (VarExpr (Just "item") (Key "name"))]
+
+  , "parse conditional" ~:
+        parseOnly parseConditional "{{if $last}}{{end}}"
+        @?=
+        Right (Conditional (LoopVar "$last", []) [] [])
+
+  , "parse conditional with else" ~:
+        parseOnly parseConditional "{{if $last}}x{{else}}y{{end}}"
+        @?=
+        Right (
+          Conditional (LoopVar "$last", [Literal "x"]) 
+                      []
+                      [Literal "y"]
+        )
+
+  , "parse conditional with `else if`" ~:
+        parseOnly parseConditional "{{if $last}}x{{else if .foo}}y{{end}}"
+        @?=
+        Right (
+          Conditional (LoopVar "$last", [Literal "x"]) 
+                      [(VarExpr Nothing (Key "foo"), [Literal "y"])]
+                      []
+        )
+
+  , "parse conditional with `else if / else`" ~:
+        parseOnly parseConditional 
+            "{{if $last}}x{{else if .foo}}y{{else}}z{{end}}"
+        @?=
+        Right (
+          Conditional (LoopVar "$last", [Literal "x"]) 
+                      [(VarExpr Nothing (Key "foo"), [Literal "y"])]
+                      [Literal "z"]
+        )
+
+  , "eval binary equals string to lit" ~:
+        evalContext 
+              (Context (toValue "{\"foo\":\"bar\"}]") [])
+              (BinaryExpr Equal 
+                  (VarExpr Nothing (Key "foo"))
+                  (LitExpr (String "bar")))
+        @?= Bool True
+
+
+  , "eval conditional `if`, eval true" ~:
+        evalTemplate (toValue "{\"foo\":\"bar\"}]")
+          [Conditional 
+              (BinaryExpr Equal 
+                  (VarExpr Nothing (Key "foo"))
+                  (LitExpr (String "bar"))
+                , [Literal "is bar"])
+              [] []
+          ]
+        @?= "is bar"
+
+  , "eval conditional `if / if else / else`, eval to `else`" ~:
+        evalTemplate (toValue "{\"foo\":\"bar\"}")
+          [Conditional 
+              (BinaryExpr Equal 
+                  (VarExpr Nothing (Key "foo"))
+                  (LitExpr (String "AAA"))
+                , [Literal "is AAA"])
+              [(BinaryExpr Equal 
+                  (VarExpr Nothing (Key "foo"))
+                  (LitExpr (String "BBB"))
+                , [Literal "is BBB"])]
+             [Literal "is bar"]
+          ]
+        @?= "is bar"
+
+  , "eval conditional `if / if else / else`, eval to `else if`" ~:
+        evalTemplate (toValue "{\"foo\":\"bar\"}]")
+          [Conditional 
+              (BinaryExpr Equal 
+                  (VarExpr Nothing (Key "foo"))
+                  (LitExpr (String "AAA"))
+                , [Literal "is AAA"])
+              [(BinaryExpr Equal 
+                  (VarExpr Nothing (Key "foo"))
+                  (LitExpr (String "bar"))
+                , [Literal "is bar"])]
+             [Literal "is neither AAA nor bar"]
+          ]
+        @?= "is bar"
 
   , "parse key path" ~:
         let inp = parseOnly pExpr ".foo"
@@ -57,11 +143,6 @@ main = runTestTT . test $ [
         let inp = parseOnly pExpr "[]"
             exp = VarExpr Nothing UnpackArray
         in Right exp @?= inp
-
-  , "parse conditional" ~:
-        parseOnly parseConditional "{{if $last}}{{end}}"
-        @?=
-        Right (Conditional (LoopVar "$last") [])
 
   , "eval" ~:
         let v = "{\"a\": \"b\"}" ^?! _Value
@@ -141,7 +222,7 @@ main = runTestTT . test $ [
         Right (Loop "x" (VarExpr Nothing UnpackArray) [])
 
   , "eval loop block with unpack array" ~:
-        evalTemplate "{\"title\":\"foo\"}, {\"title\":\"bar\"}]" 
+        evalTemplate (toValue "{\"title\":\"foo\"}, {\"title\":\"bar\"}]")
                      [Loop "x" (VarExpr Nothing UnpackArray) []]
         @?= ""
   ]
@@ -163,3 +244,6 @@ evalTest bs expr =
         c = Context v []
     in evalContext c expr'
 
+toValue :: BL8.ByteString -> Value
+toValue bs = fromMaybe (error $ "toValue failed with " ++ show bs)
+                $ bs ^? _Value
