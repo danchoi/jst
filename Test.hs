@@ -54,7 +54,7 @@ main = runTestTT . test $ [
         in Right exp @?= inp
 
   , "parse unpack array path" ~:
-        let inp = parseOnly pExpr ".[]"
+        let inp = parseOnly pExpr "[]"
             exp = Expr Nothing UnpackArray
         in Right exp @?= inp
 
@@ -134,6 +134,16 @@ main = runTestTT . test $ [
   , "eval test: != with lit" ~:
         evalTest "{\"a\": \"foo\"}" ".a != \"foo\"" 
           @?= Bool False
+
+  , "parse loop block on top level array" ~:
+        (parseOnly parseBlock "{{ for x in [] }}{{ end }}")
+        @?= 
+        Right (Loop "x" (Expr Nothing UnpackArray) [])
+
+  , "eval loop block with unpack array" ~:
+        evalTemplate "{\"title\":\"foo\"}, {\"title\":\"bar\"}]" 
+                     [Loop "x" (Expr Nothing UnpackArray) []]
+        @?= ""
   ]
 
 parseExpr :: Text -> Expr
@@ -152,5 +162,4 @@ evalTest bs expr =
                   $ parseOnly pExpr expr
         c = Context v []
     in evalContext c expr'
-
 

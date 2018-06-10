@@ -84,7 +84,8 @@ evalContext c (BinaryExpr op e1 e2) =
 
 eval :: Value -> Path -> Value
 eval v (Key k) = fromMaybe Null $ v ^? key k
-eval v UnpackArray = undefined
+eval v@(Array _) UnpackArray = v
+eval v UnpackArray = toJSON [v] -- just stick the item in a singleton
 
 evalS :: Value -> Text
 evalS (String s) = s

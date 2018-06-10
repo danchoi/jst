@@ -166,10 +166,8 @@ pPath :: Parser Path
 pPath = pKey <|> pArr
 
 pArr :: Parser Path
-pArr = 
-    stripWhiteSpace (
-      char '.' >> skipSpace >> string "[]" >> pure UnpackArray
-
+pArr = stripWhiteSpace (
+      string "[]" >> pure UnpackArray
     )
 
 pKey :: Parser Path

@@ -45,4 +45,66 @@ apple and orange
 hello
 ```
 
+## List of template expressions 
+
+All template expressions are enclosed by double braces.
+
+    # interpolationn
+    {{ .foo }}
+
+    # for block
+    {{ for item in .foos }}{{ item.name }}{{ end }}
+
+    # conditional block
+    {{ if .foo }}YES{{ end }}
+
+If use `-}}` to close the expression, then all whitespace
+after the template up to and including the following newline
+is suppressed from the output.
+
+    {{ for item in .foo -}} 
+    {{ item.name }}
+    {{ end -}}
+    Hello
+
+This is useful when you don't want template control expressions to 
+create blank lines but want the control syntax to readable. To
+get the same output as the above without the whitespace suppression,
+you'd have to write this:
+
+    {{ for item in .foo }}{{ item.name }}
+    {{ end }}Hello
+
+## Interpolation
+
+Interpolation is handled through this syntax:
+
+    # foo property of the top level json value
+    {{ .foo }} 
+
+    # foo property of a value aliased `item` in a loop (see below)
+    {{ item.foo }} 
+
+
+## Looping over JSON data
+
+The `for in EXPR` loops over arrays. 
+
+If the top-level value is an object, you have to specify a property
+that is an array, like this:
+
+    # at the top level 
+    for item in .items  
+   
+    # inner loop
+    for item in .items 
+      for item2 in item.items  
+    
+    # top level value is an array
+    for item [] 
+
+
+
+
+
 

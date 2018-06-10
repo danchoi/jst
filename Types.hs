@@ -29,7 +29,7 @@ data Context = Context
 
 data Path = 
     Key Text -- .foo
-  | UnpackArray  -- .[]
+  | UnpackArray  -- []
   deriving (Show, Eq)
 
 
