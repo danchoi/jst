@@ -141,14 +141,7 @@ Conditional blocks are supported:
 
 Unary negation and the following binary operators are supported:
 
-* + 
-* - 
-* * 
-* / 
-* == 
-* != 
-* && 
-* ||
+    + - * / == != && ||
 
 You can also group expressions with parentheses.
 
