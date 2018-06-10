@@ -51,8 +51,8 @@ truthy _ = True
 -- evaluation
 
 evalContext :: Context -> Expr -> Value
-evalContext (Context v m) (Expr Nothing p) = eval v p
-evalContext (Context _ m) (Expr (Just k) p) = 
+evalContext (Context v m) (VarExpr Nothing p) = eval v p
+evalContext (Context _ m) (VarExpr (Just k) p) = 
     let v = fromMaybe Null $ lookup k m
     in eval v p
 evalContext (Context _ m) (LoopVar k) = 

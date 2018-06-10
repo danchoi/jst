@@ -94,7 +94,7 @@ pBinaryExprs =
     <|> pBinaryExpr [Add, Sub]
 
 pVarExpr :: Parser Expr
-pVarExpr = Expr <$> (optional pVar) <*> pPath
+pVarExpr = VarExpr <$> (optional pVar) <*> pPath
 
 pNegExpr :: Parser Expr
 pNegExpr =

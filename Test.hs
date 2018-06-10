@@ -17,12 +17,12 @@ main = runTestTT . test $ [
 
     "parseLoop" ~: 
         let inp = parseOnly parseLoop "{{for item in .foo}}x{{end}}"
-            exp = Loop "item" (Expr Nothing (Key "foo")) [Literal "x"]
+            exp = Loop "item" (VarExpr Nothing (Key "foo")) [Literal "x"]
         in Right exp @?= inp
 
   , "parse interpolation" ~: 
         let inp = parseOnly parseBlock "{{.foo}}"
-            exp = Interpolate (Expr Nothing (Key "foo"))
+            exp = Interpolate (VarExpr Nothing (Key "foo"))
         in Right exp @?= inp
 
   , "don't parse {{end}} by itself" ~:
@@ -35,27 +35,28 @@ main = runTestTT . test $ [
 
   , "parse {{if $last}} and {{end}}{{item.name}}" ~:
         parseOnly (many' parseBlock) "{{if $last}} and {{end}}{{item.name}}"
-        @?= Right [Conditional (LoopVar "$last") [Literal " and "],Interpolate (Expr (Just "item") (Key "name"))]
+        @?= Right [Conditional (LoopVar "$last") [Literal " and "]
+                  ,Interpolate (VarExpr (Just "item") (Key "name"))]
 
 
   , "parse key path" ~:
         let inp = parseOnly pExpr ".foo"
-            exp = Expr Nothing (Key "foo")
+            exp = VarExpr Nothing (Key "foo")
         in Right exp @?= inp
 
   , "parse key path one letter" ~:
         let inp = parseOnly pExpr ".f"
-            exp = Expr Nothing (Key "f")
+            exp = VarExpr Nothing (Key "f")
         in Right exp @?= inp
 
   , "parse context and key path" ~:
         let inp = parseOnly pExpr "bar.foo"
-            exp = Expr (Just "bar") (Key "foo")
+            exp = VarExpr (Just "bar") (Key "foo")
         in Right exp @?= inp
 
   , "parse unpack array path" ~:
         let inp = parseOnly pExpr "[]"
-            exp = Expr Nothing UnpackArray
+            exp = VarExpr Nothing UnpackArray
         in Right exp @?= inp
 
   , "parse conditional" ~:
@@ -70,7 +71,7 @@ main = runTestTT . test $ [
   , "evalContext" ~:
         let v = "{\"a\": \"b\"}" ^?! _Value
             context = Context Null [("item", v)]
-            expr = Expr (Just "item") (Key "a")
+            expr = VarExpr (Just "item") (Key "a")
         in evalContext context expr @=? String "b"
 
   , "eval test 1" ~:
@@ -90,23 +91,23 @@ main = runTestTT . test $ [
   , "parse expr: == with lit" ~:
         parseExpr ".a == \"foo\"" 
           @?= BinaryExpr Equal 
-                (Expr Nothing (Key "a"))
+                (VarExpr Nothing (Key "a"))
                 (LitExpr (String "foo"))
 
   , "parse precedence with parens" ~:
         parseExpr "(! .a) && (.b != 2)"
           @?= BinaryExpr And 
-                  (NegExpr (Expr Nothing (Key "a"))) 
+                  (NegExpr (VarExpr Nothing (Key "a"))) 
                   (BinaryExpr NotEqual 
-                      (Expr Nothing (Key "b")) 
+                      (VarExpr Nothing (Key "b")) 
                       (LitExpr (Number 2.0)))
 
   , "parse precedence without parens" ~:
         parseExpr "! .a && .b != 2"
           @?= BinaryExpr And 
-                  (NegExpr (Expr Nothing (Key "a"))) 
+                  (NegExpr (VarExpr Nothing (Key "a"))) 
                   (BinaryExpr NotEqual 
-                      (Expr Nothing (Key "b")) 
+                      (VarExpr Nothing (Key "b")) 
                       (LitExpr (Number 2.0)))
 
   , "binary expr with loopVars" ~:
@@ -120,7 +121,7 @@ main = runTestTT . test $ [
   , "parse math expr" ~:
         parseExpr ".a + 1"
           @?= BinaryExpr Add
-                  (Expr Nothing (Key "a"))
+                  (VarExpr Nothing (Key "a"))
                   (LitExpr (Number 1.0))
 
   , "eval test: math lit" ~:
@@ -138,11 +139,11 @@ main = runTestTT . test $ [
   , "parse loop block on top level array" ~:
         (parseOnly parseBlock "{{ for x in [] }}{{ end }}")
         @?= 
-        Right (Loop "x" (Expr Nothing UnpackArray) [])
+        Right (Loop "x" (VarExpr Nothing UnpackArray) [])
 
   , "eval loop block with unpack array" ~:
         evalTemplate "{\"title\":\"foo\"}, {\"title\":\"bar\"}]" 
-                     [Loop "x" (Expr Nothing UnpackArray) []]
+                     [Loop "x" (VarExpr Nothing UnpackArray) []]
         @?= ""
   ]
 

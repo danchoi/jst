@@ -9,7 +9,7 @@ data Block =
     | Literal Text
     deriving (Show, Eq)
 
-data Expr = Expr (Maybe Target) Path
+data Expr = VarExpr (Maybe Target) Path
           | LoopVar Text -- $index, $last, $length
           | NegExpr Expr
           | BinaryExpr BinaryOp Expr Expr
