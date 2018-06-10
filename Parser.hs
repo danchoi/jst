@@ -88,7 +88,7 @@ parseEnd =
 -- parsers
 
 pExpr :: Parser Expr
-pExpr = 
+pExpr = stripWhiteSpace $
         pBinaryExprs
     <|> inParens pExpr
     <|> pNegExpr
