@@ -3,7 +3,7 @@
 Simple json text templating.
 
 
-items.tmpl
+items.jst
 
 ```
 ## {{.title}}
@@ -26,11 +26,11 @@ items.json
 
 Command:
 
-    jst items.tmpl items.json
+    jst items.jst items.json
 
     or 
 
-    jst items.tmpl - < items.json
+    jst items.jst - < items.json
 
 output:
 
