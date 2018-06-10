@@ -86,7 +86,7 @@ Interpolation is handled through this syntax:
     {{ item.foo }} 
 
 
-## Looping over JSON data
+## For loops
 
 The `for in EXPR` loops over arrays. 
 
@@ -103,8 +103,31 @@ that is an array, like this:
     # top level value is an array
     for item [] 
 
+Within a loop, these variables are in scope:
 
+variable | type | desc
+-- | -- | --
+$index | number | iteration number, starting with 1
+$length | number | total number of items for loop
+$last | boolean | is on last iteration
+    
 
+## Conditional blocks
+
+    {{ if .foo == 'bar' -}} 
+      Foo is bar!
+    {{ end -}}
+      
+
+## Operators
+
+Unary negation and the following binary operators are supported:
+
+    + | - | * | / | == | != | && | ||
+
+You can also group expressions with parentheses.
+
+    {{ if ! $last & ( .status == 'active' ) }}
 
 
 
