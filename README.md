@@ -8,11 +8,7 @@ items.tmpl
 ```
 ## {{.title}}
 {{for item in .items-}}
-{{if $last}}and {{end}}{{item.name}}{{if (! $last) && $index != 1}},{{end-}}
- {{end-}}
-
-{{for item in .items-}}
-* {{$index}}. {{item.name}} {{.title}} {{if $last}}LAST{{end}} {{$length}}
+* {{$index}}. {{item.name}}
 {{end-}}
 
 hello
@@ -25,8 +21,7 @@ items.json
   {"name":"apple"},
   {"name":"orange"}
   ],
-"title":"foods"
-}
+ "title":"foods"}
 ```
 
 Command:
@@ -41,10 +36,9 @@ output:
 
 ```
 ## foods
-apple and orange
 
-* 1. apple foods  2
-* 2. orange foods LAST 2
+* 1. apple
+* 2. orange
 
 hello
 ```
@@ -53,7 +47,7 @@ hello
 
 All template expressions are enclosed by double braces.
 
-    # interpolationn
+    # interpolation
     {{ .foo }}
 
     # for block
